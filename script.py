@@ -11,13 +11,15 @@ def resolve_with_custom_dns(domain, dns_server):
 def call_gemini_api(api_key, prompt: str):
     domain = "generativelanguage.googleapis.com"
     path = f"/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
+
+    # DNS های لاین ۱۴ (شاتل)
     ip = resolve_with_custom_dns(domain, ["178.22.122.100", "185.51.200.2"])
 
     headers = {
         "Host": domain,
         "Content-Type": "application/json",
     }
-    
+
     payload = {
         "contents": [
             {
@@ -33,10 +35,11 @@ def call_gemini_api(api_key, prompt: str):
     url = f"https://{ip}/{path}"
 
     transport = httpx.HTTPTransport(retries=2)
-    with httpx.Client(headers=headers, transport=transport) as client:
-        response = client.post(url=url, headers=headers, json=payload)
+    with httpx.Client(headers=headers, transport=transport, verify=False) as client:
+        response = client.post(url=url, json=payload)
         return response
-    
+
+# استفاده
 prompt = 'Tell me about machine learning.'
 API_KEY = config('API_KEY', cast=str)
 response = call_gemini_api(api_key=API_KEY, prompt=prompt)
