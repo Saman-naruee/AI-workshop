@@ -1,5 +1,6 @@
 import httpx
 import dns.resolver as DR
+import ssl
 from decouple import config
 
 def resolve_with_custom_dns(domain, dns_server):
@@ -32,10 +33,16 @@ def call_gemini_api(api_key, prompt: str):
         ]
     }
 
+    # ساختن SSL context بدون اعتبارسنجی
+    context = ssl.create_default_context()
+    context.check_hostname = False
+    context.verify_mode = ssl.CERT_NONE
+
     url = f"https://{ip}/{path}"
 
-    transport = httpx.HTTPTransport(retries=2)
-    with httpx.Client(headers=headers, transport=transport, verify=False) as client:
+    transport = httpx.HTTPTransport(retries=2, ssl_context=context)
+
+    with httpx.Client(headers=headers, transport=transport) as client:
         response = client.post(url=url, json=payload)
         return response
 
